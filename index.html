@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dwelio — 3D home studio</title>
+<meta name="description" content="Dwelio — draw walls, doors, windows and roofs, then orbit, walk through and draw your home in 3D.">
+<meta name="theme-color" content="#3f7a5a">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/sidebar-builder.css">
+<link rel="stylesheet" href="css/motion.css">
+</head>
+<body>
+<main class="app" id="app" data-mode="models">
+
+  <!-- ================= RAIL ================= -->
+  <nav class="rail" aria-label="Workspace">
+    <button class="logo" id="logoBtn" aria-label="Dwelio — projects" aria-haspopup="menu" aria-expanded="false"><span class="mono-d">D<i>.</i></span></button>
+    <div class="tabs" id="tabs" role="tablist" aria-label="Views">
+      <span class="ind" id="tabInd"></span>
+      <button class="tab" role="tab" aria-selected="false" data-mode="create" data-key="1"><span data-icon="plusSq"></span><span class="tx">Create</span></button>
+      <button class="tab" role="tab" aria-selected="true" data-mode="models" data-key="2"><span data-icon="cube"></span><span class="tx">Model</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-mode="interior" data-key="3"><span data-icon="sofa"></span><span class="tx">Interior</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-mode="drawings" data-key="4"><span data-icon="sheet"></span><span class="tx">Drawings</span></button>
+    </div>
+    <span class="spacer"></span>
+    <button class="ibtn" id="moreBtn" aria-label="More options" aria-haspopup="menu" aria-expanded="false" data-icon="dots" data-tip="Quick menu" data-tip-pos="right"></button>
+    <div class="pop pop-menu" id="morePop" role="menu" aria-label="Quick menu">
+      <button class="it" role="menuitem" data-act="reset"><span data-icon="fit"></span>Reset view<kbd>R</kbd></button>
+      <button class="it" role="menuitem" data-act="shot"><span data-icon="camera"></span>Save screenshot<kbd>P</kbd></button>
+      <button class="it" role="menuitem" data-act="keys"><span data-icon="keyboard"></span>Keyboard shortcuts<kbd>?</kbd></button>
+      <hr>
+      <button class="it" role="menuitemcheckbox" aria-checked="true" data-act="shadows"><span data-icon="sun"></span>Shadows<span class="chk"></span></button>
+      <button class="it" role="menuitemcheckbox" aria-checked="true" data-act="quality"><span data-icon="cube"></span>High quality<span class="chk"></span></button>
+      <button class="it" role="menuitemcheckbox" aria-checked="false" data-act="fps"><span data-icon="gauge"></span>Show FPS<span class="chk"></span></button>
+      <button class="it" role="menuitemcheckbox" aria-checked="true" data-act="ghosts"><span data-icon="users"></span>Teammate cursors<span class="chk"></span></button>
+    </div>
+  </nav>
+
+  <!-- ================= TOP BAR ================= -->
+  <header class="topbar">
+    <div class="tb-left">
+      <button class="back" id="backBtn" aria-label="Switch project" aria-haspopup="menu" aria-expanded="false"><span class="wm">Dwelio</span><span class="sl">/</span><span class="nm" id="projName">Casa Terra</span><span data-icon="chevDownSm"></span></button>
+      <div class="pop proj-pop" id="projPop" role="menu" aria-label="Projects"></div>
+    </div>
+    <div class="tb-right">
+      <div class="collab">
+        <div class="avatars">
+          <button class="avatar" data-avatar="a" aria-label="Maya — editing"><i class="dot"></i></button>
+          <button class="avatar" data-avatar="b" aria-label="Dion — viewing"><i class="dot"></i></button>
+          <button class="avatar add" id="inviteBtn" aria-label="Invite collaborator" data-icon="plus"></button>
+        </div>
+        <button class="comment-btn m-modelsonly" id="commentBtn" aria-pressed="false"><span data-icon="comment"></span>Comment<span class="cnt" id="cmtCnt" hidden>0</span></button>
+      </div>
+      <button class="ibtn" id="shareBtn" aria-label="Share" aria-haspopup="dialog" aria-expanded="false" data-icon="share" data-tip="Share"></button>
+      <button class="publish" id="publishBtn"><span class="ic" data-icon="megaphone"></span>Publish</button>
+      <div class="pop share-pop" id="sharePop" role="dialog" aria-label="Share project">
+        <h5>Share “<span class="pn">Casa Terra</span>”</h5>
+        <div class="field"><input id="shareLink" readonly value="https://dwelio.app/p/casa-terra"><button class="btn" id="copyLink">Copy link</button></div>
+        <div class="seg2" id="sharePerm" role="group" aria-label="Permission"><button aria-pressed="true">Can view</button><button aria-pressed="false">Can comment</button><button aria-pressed="false">Can edit</button></div>
+        <div class="switch-row" style="margin-top:6px"><span>Allow downloads<small>Viewers can export PDF &amp; PNG</small></span><button class="sw-toggle" role="switch" aria-checked="true" aria-label="Allow downloads" id="shareDl"></button></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= STAGE ================= -->
+  <section class="stage" id="stage">
+    <canvas id="gl" tabindex="0" aria-label="Interactive 3D model of the home. Drag to orbit, scroll to zoom, arrow keys rotate."></canvas>
+    <div class="nogl" id="nogl">WebGL is not available in this browser, so the 3D model can’t be shown.</div>
+
+    <!-- CAD sheet -->
+    <svg id="cad" role="img" aria-label="CAD drawing sheet">
+      <defs>
+        <pattern id="hatchP" width=".13" height=".13" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2=".13" stroke="var(--c-hatch)" stroke-width=".014"/></pattern>
+      </defs>
+      <rect class="bgr" width="100%" height="100%"></rect>
+      <g id="cadView">
+        <g id="cadGrid"></g>
+        <g id="cadSheet"></g>
+        <g id="cadMeas"></g>
+      </g>
+      <g id="cadCross" style="display:none;pointer-events:none">
+        <line id="chV" y1="0" y2="4000" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+        <line id="chH" x1="0" x2="4000" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+        <rect id="snapBox" width="10" height="10" fill="none" stroke="#ffd23f" stroke-width="1.6" style="display:none"/>
+      </g>
+    </svg>
+    <div class="sheetbar m-drawings" id="sheetbar" role="group" aria-label="Sheets"><span class="ind" id="sheetInd"></span></div>
+    <div class="titleblock m-drawings" id="titleblock" aria-hidden="true"></div>
+    <div class="statusbar m-drawings" id="statusbar"></div>
+
+    <div class="bbar m-build" id="bbar" role="toolbar" aria-label="Build tools"></div>
+    <div class="bhint m-build" id="bHint" aria-live="polite"></div>
+    <div class="blabel" id="bLabel"></div>
+    <div class="plot-cap" id="plotCap">Building plot · 15 × 11 m</div>
+    <div id="pins"></div>
+    <div id="ghosts"></div>
+    <div id="tip3d"></div>
+    <div class="scan" id="scan"></div>
+    <div class="veil" id="veil"></div>
+    <div class="loading" id="loading"><div class="lb">Loading model…<div class="bar"><i></i></div></div></div>
+
+    <div class="pop" id="avPop" style="right:200px;top:62px;transform-origin:top right;width:210px"></div>
+    <div class="pop comment-pop" id="commentPop" role="dialog" aria-label="Comment thread"></div>
+
+    <!-- LEFT: models -->
+    <div class="tools m-models" id="toolsModels">
+      <div class="theme" id="theme" data-v="day" role="group" aria-label="Lighting">
+        <span class="knob"></span>
+        <button id="dayBtn" aria-pressed="true" aria-label="Day lighting" data-icon="sun" data-tip="Daylight"></button>
+        <button id="nightBtn" aria-pressed="false" aria-label="Night lighting" data-icon="moon" data-tip="Night"></button>
+      </div>
+      <button class="thumb sample-only" id="thumbBtn" aria-label="Walk inside the house">
+        <svg class="room" viewBox="0 0 70 74" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="rSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfd9d2"/><stop offset="1" stop-color="#7f9a76"/></linearGradient>
+            <linearGradient id="rFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b98f63"/><stop offset="1" stop-color="#7d5a3a"/></linearGradient>
+            <linearGradient id="rWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efe6d8"/><stop offset="1" stop-color="#cdbfa9"/></linearGradient>
+          </defs>
+          <rect width="70" height="74" fill="url(#rWall)"/>
+          <rect x="14" y="4" width="50" height="44" fill="url(#rSky)"/>
+          <path d="M14 36c8-9 14-9 20-2 6-8 14-9 30 0V48H14z" fill="#4f6b4a" opacity=".85"/>
+          <g stroke="#2a2420" stroke-width="1.6" fill="none"><rect x="14" y="4" width="50" height="44"/><path d="M31 4v44M47.5 4v44M14 26h50" stroke-width="1"/></g>
+          <rect x="0" y="48" width="70" height="26" fill="url(#rFloor)"/>
+          <rect x="6" y="46" width="30" height="13" rx="3" fill="#5c4a3c"/><rect x="6" y="42" width="30" height="7" rx="3" fill="#6f5a49"/>
+          <rect x="44" y="52" width="20" height="6" rx="2" fill="#3a2d23"/>
+          <path d="M52 4v14" stroke="#2a2420" stroke-width=".8"/><circle cx="52" cy="20" r="3.2" fill="#ffe2a6"/>
+          <rect width="70" height="74" fill="#ffb55a" opacity=".08"/>
+        </svg>
+        <span class="cap"><span data-icon="sofa"></span>Step inside</span>
+      </button>
+      <div class="sizecard">
+        <h4>Zoom</h4>
+        <div class="size-row">
+          <div class="steps">
+            <button class="step" id="sizeDown" aria-label="Zoom out" data-icon="minus"></button>
+            <button class="step" id="sizeUp" aria-label="Zoom in" data-icon="plus"></button>
+          </div>
+          <span class="size-val" id="sizeVal">80%</span>
+        </div>
+        <input class="slider" id="sizeRange" type="range" min="40" max="130" step="5" value="80" aria-label="Zoom">
+        <div class="orbit" role="group" aria-label="Rotate model">
+          <button class="up" id="orUp" aria-label="Tilt up" data-icon="triUp"></button>
+          <button class="lt" id="orLeft" aria-label="Rotate left" data-icon="triLeft"></button>
+          <button class="globe" id="orReset" aria-label="Reset view" data-icon="globe"></button>
+          <button class="rt" id="orRight" aria-label="Rotate right" data-icon="triRight"></button>
+          <button class="dn" id="orDown" aria-label="Tilt down" data-icon="triDown"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEFT: CAD tools -->
+    <div class="tools tools-cad m-drawings" id="toolsCad">
+      <div class="grp">
+        <button class="tl" id="tlSelect" aria-pressed="true" aria-label="Select / pan" data-icon="cursor" data-tip="Pan (V)" data-tip-pos="right"></button>
+        <button class="tl" id="tlMeasure" aria-pressed="false" aria-label="Measure distance" data-icon="ruler" data-tip="Measure (M)" data-tip-pos="right"></button>
+        <button class="tl" id="tlSnap" aria-pressed="true" aria-label="Snap" data-icon="magnet" data-tip="Snap (S)" data-tip-pos="right"></button>
+        <button class="tl" id="tlGrid" aria-pressed="true" aria-label="Grid" data-icon="grid" data-tip="Grid (G)" data-tip-pos="right"></button>
+      </div>
+      <div class="grp">
+        <button class="tl" id="tlZin" aria-label="Zoom in" data-icon="zin" data-tip="Zoom in (+)" data-tip-pos="right"></button>
+        <button class="tl" id="tlZout" aria-label="Zoom out" data-icon="zout" data-tip="Zoom out (−)" data-tip-pos="right"></button>
+        <button class="tl" id="tlFit" aria-label="Fit to sheet" data-icon="fit" data-tip="Fit (F)" data-tip-pos="right"></button>
+      </div>
+      <div class="grp">
+        <button class="tl" id="tlPaper" aria-pressed="false" aria-label="Paper preview" data-icon="paper" data-tip="Paper / dark" data-tip-pos="right"></button>
+      </div>
+    </div>
+
+    <!-- LEFT: walk -->
+    <div class="tools tools-walk m-interior" id="toolsWalk">
+      <div class="card2">
+        <h4>Floor</h4>
+        <div class="lvl" id="lvl" data-v="0" role="group" aria-label="Floor level"><span class="hl"></span><button id="lvl0" aria-pressed="true">Ground</button><button id="lvl1" aria-pressed="false">First</button></div>
+      </div>
+      <div class="card2">
+        <h4>Jump to room</h4>
+        <div class="roomlist" id="roomList"></div>
+      </div>
+      <div class="card2">
+        <h4>Field of view <span id="fovVal" style="float:right;color:#9a9a96;font-variant-numeric:tabular-nums">72°</span></h4>
+        <input class="slider" id="fovRange" type="range" min="55" max="100" step="1" value="72" aria-label="Field of view">
+      </div>
+      <button class="btn ghost-b" id="exitWalk" style="width:100%"><span data-icon="exit"></span>Exit to 3D</button>
+    </div>
+
+    <!-- view bar / 360 -->
+    <div class="viewbar m-models" id="viewbar" role="toolbar" aria-label="View controls">
+      <button class="vb-spin" id="spinBtn" aria-pressed="false" aria-label="Play 360 degree tour"><span data-icon="rot360"></span><span id="spinLbl">360° tour</span></button>
+      <div class="vb-seg" id="vbSeg" role="group" aria-label="View presets"><span class="hl"></span>
+        <button data-view="iso" aria-pressed="true">Iso</button><button data-view="front" aria-pressed="false">Front</button><button data-view="right" aria-pressed="false">Right</button><button data-view="back" aria-pressed="false">Back</button><button data-view="left" aria-pressed="false">Left</button><button data-view="top" aria-pressed="false">Top</button>
+      </div>
+      <span class="vb-deg" id="vbDeg" aria-live="off">45°</span>
+    </div>
+
+    <!-- walk HUD -->
+    <div class="cross m-interior"><i></i></div>
+    <div class="walk-tip m-interior" id="walkTip"><span><kbd class="kbd">W</kbd><kbd class="kbd">A</kbd><kbd class="kbd">S</kbd><kbd class="kbd">D</kbd> move</span><span>drag to look</span><span>click floor to walk</span></div>
+    <div class="room-label m-interior" id="roomLabel"></div>
+    <div class="minimap m-interior" id="minimap" role="img" aria-label="Floor plan minimap. Click to jump."><span class="mm-lbl" id="mmLbl">Ground floor</span><svg id="mmSvg" viewBox="-5.6 -4.4 11.4 9.2"></svg></div>
+    <div class="joy m-interior" id="joy" aria-label="Move joystick"><i></i></div>
+
+    <!-- AI -->
+    <button class="ai m-modelsonly sample-only" id="aiBtn"><span class="ai-ic" data-icon="wand"></span><span id="aiLabel">AI landscape</span></button>
+    <div class="pop ai-pop" id="aiPop" role="dialog" aria-label="AI generation" style="transform-origin:bottom left">
+      <h5>Describe a landscape</h5>
+      <div class="field"><input id="aiPrompt" placeholder="e.g. tropical garden with palms" aria-label="Describe the landscape"><button class="btn y" id="aiGo">Generate</button></div>
+      <div class="chips" style="margin-top:10px" id="aiChips"></div>
+      <div class="prog" id="aiProg" hidden><i></i></div>
+    </div>
+  </section>
+
+  <!-- ================= RIGHT PANEL ================= -->
+  <aside class="panel" aria-label="Properties">
+
+    <!-- 3D models -->
+    <div class="pv m-modelsonly" data-pv="models">
+      <header class="ph"><span class="eyebrow">Model</span><h2>Materials &amp; systems</h2><p class="ph-sub" id="phSub">Click any part of the house to jump to its settings.</p>
+        <button class="btn ghost-b edit-layout" id="editLayout"><span data-icon="wand"></span>Edit layout in Create</button></header>
+      <section class="card" data-card="roof">
+        <button class="card-head" aria-expanded="false"><span class="txt"><span class="t">Roof</span><span class="s">Tile, ondulin or soft membrane</span></span><span class="chev" data-icon="chevDown"></span></button>
+        <div class="card-body"><div class="inner"><div class="pad">
+          <div class="chips" id="roofChips"></div>
+          <p class="hint" id="roofHint"></p>
+        </div></div></div>
+      </section>
+      <section class="card open" data-card="wall">
+        <button class="card-head" aria-expanded="true"><span class="txt"><span class="t">Facade</span><span class="s">Cladding, insulation and render</span></span><span class="chev" data-icon="chevDown"></span></button>
+        <div class="card-body"><div class="inner"><div class="pad">
+          <div class="seg sample-only" id="wallSeg" data-v="0" role="group" aria-label="Wall material type"><span class="hl"></span>
+            <button id="segDecor" aria-pressed="true">Cladding</button>
+            <button id="segInsul" aria-pressed="false">Insulation</button>
+          </div>
+          <div class="lbl sample-only" id="panelsLbl">Cladding boards</div>
+          <div class="sw-row sample-only" id="panelRow"></div>
+          <div class="lbl" id="finLbl">Render &amp; finish</div>
+          <div class="fin-row" id="finRow"></div>
+          <div class="export" data-export data-formats="PDF,PNG" data-ctx="models">
+            <span class="sv">Export</span>
+            <button class="fmt" aria-haspopup="listbox" aria-expanded="false"><span class="fv">PDF</span><span data-icon="chevDownSm"></span></button>
+            <button class="dl"><i class="fill"></i><span>Download</span></button>
+            <div class="menu" role="listbox" aria-label="File format"></div>
+          </div>
+        </div></div></div>
+      </section>
+      <section class="card" data-card="tech">
+        <button class="card-head" aria-expanded="false"><span class="txt"><span class="t">Smart systems</span><span class="s">Lighting, solar and glazing</span></span><span class="chev" data-icon="chevDown"></span></button>
+        <div class="card-body"><div class="inner"><div class="pad">
+          <div class="switch-row sample-only"><span>Garden lighting<small>Terrace and path lights</small></span><button class="sw-toggle" role="switch" aria-checked="true" aria-label="Garden lighting" data-tech="lights"></button></div>
+          <div class="switch-row sample-only"><span>Solar roof<small>Rooftop photovoltaic panels</small></span><button class="sw-toggle" role="switch" aria-checked="false" aria-label="Solar roof" data-tech="solar"></button></div>
+          <div class="switch-row"><span>Tinted glazing<small>Electrochromic windows</small></span><button class="sw-toggle" role="switch" aria-checked="false" aria-label="Tinted glazing" data-tech="glass"></button></div>
+        </div></div></div>
+      </section>
+      <section class="card sample-only" data-card="land">
+        <button class="card-head" aria-expanded="false"><span class="txt"><span class="t">Landscape</span><span class="s">Planting for each climate</span></span><span class="chev" data-icon="chevDown"></span></button>
+        <div class="card-body"><div class="inner"><div class="pad">
+          <div class="chips" id="climateChips"></div>
+          <p class="hint" id="climateHint"></p>
+        </div></div></div>
+      </section>
+    </div>
+
+    <!-- Create -->
+    <div class="pv m-create" data-pv="create" hidden>
+      <div id="bPanel">
+        <header class="ph"><span class="eyebrow">Create</span><h2>Build your house</h2><p>Choose a tool on the bar above the canvas, then click on the grid. Drag to orbit the view.</p></header>
+        <ol class="bsteps" id="bSteps">
+          <li data-step="walls" data-tool="wall" tabindex="0"><i class="bn">1</i><span><b>Walls</b><small>Click points on the grid. Click the last point again to finish.</small></span></li>
+          <li data-step="open" data-tool="door" tabindex="0"><i class="bn">2</i><span><b>Doors, windows &amp; glass</b><small>Hover a wall and click to place.</small></span></li>
+          <li data-step="floor" data-tool="floor" tabindex="0"><i class="bn">3</i><span><b>Floor</b><small>Click inside a closed room.</small></span></li>
+          <li data-step="roof" data-tool="roof" tabindex="0"><i class="bn">4</i><span><b>Roof</b><small>Click inside a closed room.</small></span></li>
+        </ol>
+        <section class="bsec" id="bHelp"><div class="lbl">Active tool</div><div class="bh-t" id="bhT">Draw walls</div><p class="bh-p" id="bhP"></p></section>
+        <section class="bsec" id="bOptFloor" hidden><div class="lbl">Floor material</div><div class="chips" id="bFloorChips"></div></section>
+        <section class="bsec" id="bOptRoof" hidden><div class="lbl">Roof shape</div><div class="chips" id="bRoofChips"></div><p class="hint" id="bRoofHint"></p></section>
+        <section class="bsec">
+          <div class="lbl">Level</div>
+          <div class="seg2 wide" id="bLvl" role="group" aria-label="Level"><button aria-pressed="true" data-lv="0">Ground</button><button aria-pressed="false" data-lv="1">First floor</button></div>
+          <div class="switch-row" style="margin-top:8px"><span>Low walls<small>Cut walls at waist height to see inside</small></span><button class="sw-toggle" role="switch" aria-checked="true" aria-label="Low walls" id="bCut"></button></div>
+        </section>
+        <section class="bsec">
+          <div class="lbl">Your build</div>
+          <dl class="bstats" id="bStats"><div><dt>Walls</dt><dd id="stW">0 m</dd></div><div><dt>Rooms</dt><dd id="stR">0</dd></div><div><dt>Floor</dt><dd id="stF">0 m²</dd></div><div><dt>Openings</dt><dd id="stO">0</dd></div></dl>
+        </section>
+        <section class="bsec">
+          <div class="lbl">Start from an example</div>
+          <div class="ex-grid" id="exGrid"></div>
+        </section>
+        <section class="bsec bfoot">
+          <label class="lbl" for="bName">Project name</label>
+          <input class="txt-in" id="bName" value="My house" maxlength="28" autocomplete="off">
+          <button class="btn y wide" id="bOpen"><span data-icon="tick"></span>Open in editor</button>
+          <div class="brow"><button class="btn ghost-b" id="bClear">Clear all</button><button class="btn ghost-b" id="bDemo"><span data-icon="play"></span>Watch demo</button></div>
+        </section>
+      </div>
+      <div id="demoPanel" hidden>
+        <header class="ph"><span class="eyebrow">Guided demo</span><h2 id="bldTitle">Ready to build</h2><p id="bldSub">Watch how a house goes up, stage by stage.</p></header>
+        <div class="demo-body">
+          <div class="prog big"><i id="bldProg"></i></div>
+          <ol class="stages" id="stageList"></ol>
+          <div class="bld-ctl">
+            <button class="ibtn sm" id="bldPrev" aria-label="Previous stage" data-icon="skipPrev"></button>
+            <button class="ibtn play" id="bldPlay" aria-label="Pause" data-icon="pause"></button>
+            <button class="ibtn sm" id="bldNext" aria-label="Next stage" data-icon="skipNext"></button>
+            <div class="seg2 speed" id="bldSpeed" role="group" aria-label="Speed"><button aria-pressed="true" data-s="1">1×</button><button aria-pressed="false" data-s="2">2×</button><button aria-pressed="false" data-s="4">4×</button></div>
+          </div>
+          <button class="btn y wide" id="bldOpen"><span data-icon="plusSq"></span>Build your own</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Drawings -->
+    <div class="pv m-drawings" data-pv="drawings" hidden>
+      <header class="ph"><span class="eyebrow">Drawings</span><h2>Sheets &amp; layers</h2><p>Plans and elevations generated from the model.</p></header>
+      <section class="card open" data-card="sheets">
+        <button class="card-head" aria-expanded="true"><span class="txt"><span class="t">Sheets</span><span class="s">Plans and elevations from the model</span></span><span class="chev" data-icon="chevDown"></span></button>
+        <div class="card-body"><div class="inner"><div class="pad" id="sheetList" style="padding-top:0"></div></div></div>
+      </section>
+      <section class="card open" data-card="layers">
+        <button class="card-head" aria-expanded="true"><span class="txt"><span class="t">Layers</span><span class="s">Toggle what is drawn on the sheet</span></span><span class="chev" data-icon="chevDown"></span></button>
+        <div class="card-body"><div class="inner"><div class="pad" id="layerList" style="padding-top:0"></div></div></div>
+      </section>
+      <section class="card" data-card="annot">
+        <button class="card-head" aria-expanded="false"><span class="txt"><span class="t">Annotate</span><span class="s">Measurements and line weight</span></span><span class="chev" data-icon="chevDown"></span></button>
+        <div class="card-body"><div class="inner"><div class="pad">
+          <div class="lbl">Line weight <span id="lwVal" style="float:right;color:#9a9a96;font-variant-numeric:tabular-nums">1.4</span></div>
+          <input class="slider" id="lwRange" type="range" min="6" max="30" step="1" value="14" aria-label="Line weight">
+          <div class="lbl" style="margin-top:12px">Measurements</div>
+          <button class="btn ghost-b" id="measBtn" style="width:100%"><span data-icon="ruler"></span>New measurement</button>
+          <div class="meas-list" id="measList"></div>
+        </div></div></div>
+      </section>
+      <section class="card open" data-card="exportD">
+        <div class="pad" style="padding-top:2px"><div class="export" style="margin-top:8px;padding-top:12px;border-top:0" data-export data-formats="PDF,SVG,PNG" data-ctx="drawings">
+          <span class="sv">Export</span>
+          <button class="fmt" aria-haspopup="listbox" aria-expanded="false"><span class="fv">PDF</span><span data-icon="chevDownSm"></span></button>
+          <button class="dl"><i class="fill"></i><span>Download</span></button>
+          <div class="menu" role="listbox" aria-label="File format"></div>
+        </div></div>
+      </section>
+    </div>
+
+    <!-- Interior -->
+    <div class="pv m-interior" data-pv="interior" hidden>
+      <header class="ph"><span class="eyebrow">Interior</span><h2>Finishes &amp; light</h2><p>Changes show live while you walk through.</p></header>
+      <section class="card open" data-card="floor">
+        <button class="card-head" aria-expanded="true"><span class="txt"><span class="t">Flooring</span><span class="s">Boards, stone and screed</span></span><span class="chev" data-icon="chevDown"></span></button>
+        <div class="card-body"><div class="inner"><div class="pad"><div class="sw-row" id="floorRow" style="margin-bottom:4px"></div><p class="hint" id="floorHint" style="margin-top:2px"></p></div></div></div>
+      </section>
+      <section class="card open" data-card="paint">
+        <button class="card-head" aria-expanded="true"><span class="txt"><span class="t">Wall paint</span><span class="s">Interior colour palette</span></span><span class="chev" data-icon="chevDown"></span></button>
+        <div class="card-body"><div class="inner"><div class="pad"><div class="sw-row" id="paintRow" style="margin-bottom:0"></div></div></div></div>
+      </section>
+      <section class="card open" data-card="scene">
+        <button class="card-head" aria-expanded="true"><span class="txt"><span class="t">Lighting scene</span><span class="s">Mood and brightness</span></span><span class="chev" data-icon="chevDown"></span></button>
+        <div class="card-body"><div class="inner"><div class="pad">
+          <div class="chips" id="sceneChips"></div>
+          <div class="lbl" style="margin-top:12px">Brightness <span id="brVal" style="float:right;color:#9a9a96;font-variant-numeric:tabular-nums">100%</span></div>
+          <input class="slider" id="brRange" type="range" min="20" max="160" step="5" value="100" aria-label="Interior brightness">
+        </div></div></div>
+      </section>
+      <section class="card" data-card="furn">
+        <button class="card-head" aria-expanded="false"><span class="txt"><span class="t">Furniture</span><span class="s">Show or hide the staging</span></span><span class="chev" data-icon="chevDown"></span></button>
+        <div class="card-body"><div class="inner"><div class="pad">
+          <div class="switch-row"><span>Furniture<small>Sofas, beds, kitchen</small></span><button class="sw-toggle" role="switch" aria-checked="true" aria-label="Furniture" id="furnToggle"></button></div>
+          <div class="switch-row"><span>TV &amp; screens<small>Living room media wall</small></span><button class="sw-toggle" role="switch" aria-checked="true" aria-label="TV" id="tvToggle"></button></div>
+        </div></div></div>
+      </section>
+      <section class="card open" data-card="exportI">
+        <div class="pad" style="padding-top:2px"><div class="export" style="margin-top:8px;padding-top:12px;border-top:0" data-export data-formats="PNG,PDF" data-ctx="interior">
+          <span class="sv">Export</span>
+          <button class="fmt" aria-haspopup="listbox" aria-expanded="false"><span class="fv">PNG</span><span data-icon="chevDownSm"></span></button>
+          <button class="dl"><i class="fill"></i><span>Save view</span></button>
+          <div class="menu" role="listbox" aria-label="File format"></div>
+        </div></div>
+      </section>
+    </div>
+  </aside>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <!-- Start (create) modal -->
+  <div class="modal-back" id="startModal" role="dialog" aria-modal="true" aria-labelledby="startTitle">
+    <div class="modal wide">
+      <div class="st-head"><div><h3 id="startTitle">Start a new home</h3><div class="sub" id="startSub">You will draw walls, place doors and windows, then lay a floor and a roof on an empty plot.</div></div><button class="ibtn sm" id="startClose" aria-label="Close" data-icon="close"></button></div>
+      <div class="st-body" id="startBody">
+        <div class="opt-grid" id="optGrid">
+          <button class="opt" data-opt="blank"><span class="opt-ic" data-icon="plotIc"></span><b>Blank plot</b><small>Empty grid. Draw every wall yourself.</small></button>
+          <button class="opt" data-opt="example"><span class="opt-ic" data-icon="sheet"></span><b>Start from an example</b><small>Load a small layout and edit it: studio, cottage, L-house or two-storey.</small></button>
+          <button class="opt" data-opt="demo"><span class="opt-ic" data-icon="play"></span><b>Watch a guided build</b><small>See a house go up stage by stage, then try it yourself.</small></button>
+        </div>
+        <div class="tpl-grid" id="tplGrid" hidden></div>
+      </div>
+      <div class="row" id="tplRow" hidden><button class="btn ghost-b" id="tplBack">Back</button></div>
+    </div>
+  </div>
+  <!-- Publish modal -->
+  <div class="modal-back" id="pubModal" role="dialog" aria-modal="true" aria-labelledby="pubTitle">
+    <div class="modal">
+      <h3 id="pubTitle">Publish project</h3>
+      <div class="sub">Make the latest version of <b class="pn">Casa Terra</b> available to your team.</div>
+      <div id="pubSteps">
+        <div class="check" data-s="0"><span class="cb" data-icon="tick"></span>Validate model &amp; materials</div>
+        <div class="check" data-s="1"><span class="cb" data-icon="tick"></span>Render preview images</div>
+        <div class="check" data-s="2"><span class="cb" data-icon="tick"></span>Export drawing sheets</div>
+        <div class="check" data-s="3"><span class="cb" data-icon="tick"></span>Notify collaborators</div>
+      </div>
+      <div class="prog"><i id="pubProg"></i></div>
+      <div class="row"><button class="btn ghost-b" id="pubCancel">Cancel</button><button class="btn y" id="pubGo">Publish now</button></div>
+    </div>
+  </div>
+  <!-- Shortcuts modal -->
+  <div class="modal-back" id="keysModal" role="dialog" aria-modal="true" aria-labelledby="keysTitle">
+    <div class="modal">
+      <h3 id="keysTitle">Keyboard shortcuts</h3>
+      <div class="sub">Works anywhere on the canvas.</div>
+      <div class="sc-grid">
+        <span>Orbit model</span><span><kbd class="kbd">←</kbd> <kbd class="kbd">→</kbd> <kbd class="kbd">↑</kbd> <kbd class="kbd">↓</kbd></span>
+        <span>Play / stop 360° tour (Create: build)</span><span><kbd class="kbd">Space</kbd></span>
+        <span>Switch workspace</span><span><kbd class="kbd">1</kbd> <kbd class="kbd">2</kbd> <kbd class="kbd">3</kbd> <kbd class="kbd">4</kbd></span>
+        <span>Preset angles</span><span><kbd class="kbd">F</kbd> <kbd class="kbd">B</kbd> <kbd class="kbd">L</kbd> <kbd class="kbd">T</kbd> <kbd class="kbd">I</kbd></span>
+        <span>Walk (interior)</span><span><kbd class="kbd">W</kbd><kbd class="kbd">A</kbd><kbd class="kbd">S</kbd><kbd class="kbd">D</kbd> <kbd class="kbd">Shift</kbd></span>
+        <span>Measure (drawings)</span><span><kbd class="kbd">M</kbd></span>
+        <span>Reset view / screenshot</span><span><kbd class="kbd">R</kbd> <kbd class="kbd">P</kbd></span>
+      </div>
+      <div class="row"><button class="btn y" id="keysClose">Got it</button></div>
+    </div>
+  </div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/core/utils.js"></script>
+<script src="js/core/icons.js"></script>
+<script src="js/core/toast.js"></script>
+<script src="js/core/export-pdf.js"></script>
+<script src="js/core/house-data.js"></script>
+<script src="js/core/textures.js"></script>
+<script src="js/scene/scene.js"></script>
+<script src="js/cad/cad.js"></script>
+<script src="js/ui/shell.js"></script>
+<script src="js/ui/panels.js"></script>
+<script src="js/ui/cad-ui.js"></script>
+<script src="js/ui/interior-ui.js"></script>
+<script src="js/ui/create.js"></script>
+<script src="js/ui/keyboard.js"></script>
+<script src="js/ui/motion.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

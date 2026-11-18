@@ -1,0 +1,94 @@
+/* Dwelio — motion language and finish */
+/* =========================================================
+   v4 — motion language + finish
+   timing: 120 micro · 220 small · 420 medium · 700 choreographed
+   curves: --ease-out enter · --ease-in-out move · --spring emphasis only
+   ========================================================= */
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes slidein{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes dropin{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:none}}
+@keyframes popin{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
+@keyframes iconpop{0%{transform:scale(.7)}60%{transform:scale(1.14)}100%{transform:scale(1)}}
+@keyframes tickpop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.18)}100%{transform:scale(1);opacity:1}}
+@keyframes ripple{to{transform:scale(2.6);opacity:0}}
+@keyframes pingring{0%{transform:translate(-50%,-50%) scale(.3);opacity:.9}100%{transform:translate(-50%,-50%) scale(1.5);opacity:0}}
+@keyframes dotbeat{0%,100%{transform:scale(1)}40%{transform:scale(1.5)}}
+@keyframes sheen{from{background-position:-160% 0}to{background-position:260% 0}}
+
+/* boot: the shell assembles once, in reading order */
+.rail{animation:slidein .55s var(--ease-out) both}
+.rail .tab{animation:slidein .5s var(--ease-out) both}
+.rail .tab:nth-child(1){animation-delay:.18s}.rail .tab:nth-child(2){animation-delay:.24s}.rail .tab:nth-child(3){animation-delay:.30s}.rail .tab:nth-child(4){animation-delay:.36s}
+.topbar{animation:dropin .55s var(--ease-out) .08s both}
+.panel{animation:slidein .6s var(--ease-out) .12s both}
+.tools,.viewbar,.ai{animation:popin .5s var(--ease-out) .45s both}
+@keyframes bbarin{from{opacity:0;transform:translateX(-50%) translateY(-8px) scale(.96)}to{opacity:1;transform:translateX(-50%)}}
+.bbar{animation:bbarin .5s var(--ease-out) .1s both}
+.rail .logo{animation:popin .6s var(--spring) .05s both}
+
+/* panel content: sections arrive in sequence every time the view changes */
+.pv>*,#bPanel>*,#demoPanel>*{animation:rise .46s var(--ease-out) both}
+.pv>*:nth-child(1),#bPanel>*:nth-child(1),#demoPanel>*:nth-child(1){animation-delay:.02s}
+.pv>*:nth-child(2),#bPanel>*:nth-child(2),#demoPanel>*:nth-child(2){animation-delay:.07s}
+.pv>*:nth-child(3),#bPanel>*:nth-child(3),#demoPanel>*:nth-child(3){animation-delay:.12s}
+.pv>*:nth-child(4),#bPanel>*:nth-child(4),#demoPanel>*:nth-child(4){animation-delay:.17s}
+.pv>*:nth-child(5),#bPanel>*:nth-child(5),#demoPanel>*:nth-child(5){animation-delay:.22s}
+.pv>*:nth-child(n+6),#bPanel>*:nth-child(n+6),#demoPanel>*:nth-child(n+6){animation-delay:.27s}
+.pv{animation:none}
+#bSteps li{animation:rise .4s var(--ease-out) both}
+#bSteps li:nth-child(1){animation-delay:.1s}#bSteps li:nth-child(2){animation-delay:.16s}#bSteps li:nth-child(3){animation-delay:.22s}#bSteps li:nth-child(4){animation-delay:.28s}
+
+/* rail: icon of the active tab springs, hover nudges */
+.rail .tab svg{transition:transform .22s var(--ease-out)}
+.rail .tab:hover svg{transform:translateY(-1px) scale(1.06)}
+.rail .tab[aria-selected=true] svg{animation:iconpop .42s var(--spring)}
+.rail .tab:active svg{transform:scale(.92)}
+
+/* press + hover feedback (compositor-only) */
+.btn,.opt,.tpl,.ex,.chip,.bbar .bt,.swatch,.avatar,.pill{transition:transform .16s var(--ease-out),background .16s,box-shadow .2s,border-color .16s,color .16s}
+.opt:hover,.tpl:hover,.ex:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(34,48,38,.12);border-color:#b9c3b8}
+.opt:active,.tpl:active,.ex:active,.btn:active,.chip:active{transform:scale(.97)}
+.opt .opt-ic,.tpl .pt{transition:transform .3s var(--spring),background .2s}
+.opt:hover .opt-ic,.tpl:hover .pt{transform:scale(1.1) rotate(-4deg)}
+.bbar .bt svg{transition:transform .24s var(--spring)}
+.bbar .bt:hover svg{transform:translateY(-2px)}
+.bbar .bt[aria-pressed=true] svg{animation:iconpop .38s var(--spring)}
+.bbar .bt[aria-pressed=true]{box-shadow:0 6px 16px rgba(28,38,30,.28)}
+.btn,.bbar .bt,.opt,.tpl,.ex{position:relative;overflow:hidden}
+.bbar .bt{overflow:visible}
+.rip{position:absolute;border-radius:50%;pointer-events:none;background:currentColor;opacity:.22;width:34px;height:34px;margin:-17px 0 0 -17px;animation:ripple .55s var(--ease-out) forwards}
+.bbar .bt .rip{opacity:.16}
+.btn.y:not(:disabled){background-image:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:220% 100%;background-repeat:no-repeat;background-position:-160% 0}
+.btn.y:not(:disabled):hover{animation:sheen .9s var(--ease-in-out)}
+
+/* steps + toggles + toast */
+.bsteps li.done .bn{animation:tickpop .42s var(--spring)}
+.bsteps li{transition:background .22s,transform .22s var(--ease-out)}
+.bsteps li.cur{transform:translateX(2px)}
+.toast .ti{animation:iconpop .5s var(--spring) .1s both}
+.modal{transition:transform .42s var(--ease-out),opacity .3s}
+.modal-back:not(.open) .modal{transform:translateY(16px) scale(.97);opacity:0}
+.modal-back.open .modal{opacity:1}
+.dot{transition:background .3s}
+.avatar .dot{animation:dotbeat 2.6s ease-in-out infinite}
+.bstats dd{font-variant-numeric:tabular-nums;transition:color .3s}
+.bstats dd.bump{animation:iconpop .4s var(--spring);color:var(--clay)}
+.pingring{position:absolute;z-index:7;width:46px;height:46px;border-radius:50%;border:2px solid var(--clay);pointer-events:none;animation:pingring .6s var(--ease-out) forwards}
+
+/* finish: tactile panel, calmer scroll, consistent focus */
+.panel{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1  0 0 0 0 .15  0 0 0 0 .12  0 0 0 .05 0'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");}
+.panel{scrollbar-width:thin;scrollbar-color:#cfd3c8 transparent;scroll-behavior:smooth}
+.panel::-webkit-scrollbar{width:8px}.panel::-webkit-scrollbar-thumb{background:#cfd3c8;border-radius:8px;border:2px solid transparent;background-clip:content-box}
+.panel.scrolled::before{content:"";position:sticky;top:0;display:block;height:14px;margin-bottom:-14px;background:linear-gradient(rgba(28,38,30,.1),transparent);z-index:5;pointer-events:none}
+:focus-visible{outline:2px solid var(--clay);outline-offset:2px;border-radius:6px}
+::selection{background:rgba(196,98,58,.22)}
+.app[data-mode=models] .stage::after,.app[data-mode=create] .stage::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 78% at 52% 52%,transparent 55%,rgba(40,56,44,.13) 100%);z-index:0}
+.app *{font-variant-numeric:tabular-nums}
+.stage{contain:layout style}
+#gl{will-change:contents}
+
+@media (prefers-reduced-motion:reduce){
+  .rail,.rail .tab,.topbar,.panel,.tools,.viewbar,.ai,.bbar,.pv>*,#bPanel>*,#demoPanel>*,#bSteps li{animation:none!important}
+  .rip,.pingring{display:none}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}

@@ -1,0 +1,10 @@
+{
+  "name": "Dwelio — 3D home studio",
+  "short_name": "Dwelio",
+  "description": "Draw, orbit, walk through and draw your home in 3D.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fbfaf6",
+  "theme_color": "#3f7a5a",
+  "icons": [{ "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
