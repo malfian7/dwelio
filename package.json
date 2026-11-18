@@ -1,11 +1,11 @@
 {
   "name": "dwelio",
   "version": "1.0.0",
-  "description": "Dwelio — a browser-based 3D home studio (Three.js, no build step required).",
+  "description": "Dwelio \u2014 a browser-based 3D home studio (Three.js, no build step required).",
   "private": true,
   "scripts": {
     "serve": "python3 -m http.server 8080",
-    "build": "python3 tools/build_single.py",
+    "bundle": "python3 tools/build_single.py",
     "check": "node tools/check_syntax.mjs"
   }
 }

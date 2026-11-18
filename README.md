@@ -37,7 +37,8 @@ dwelio/
 │   ├── build_single.py         Bundle everything into one self-contained HTML file (Python 3)
 │   └── check_syntax.mjs        Syntax-check every script listed in index.html (Node 18+)
 ├── .github/workflows/pages.yml Deploys the folder to GitHub Pages on every push to main
-└── package.json                Convenience scripts
+├── vercel.json                 Vercel: static site served from the repo root, no build step
+└── package.json                Convenience scripts (serve, bundle, check)
 ```
 
 ## Run it
@@ -57,6 +58,10 @@ python3 tools/build_single.py     # → dist/dwelio.single.html
 ## Deploy to GitHub Pages
 
 Push to a repository, then **Settings → Pages → Source: GitHub Actions**. The workflow in `.github/workflows/pages.yml` syntax-checks the scripts and publishes the site. (Without Actions you can also choose *Deploy from a branch → main / root*.)
+
+## Deploy to Vercel
+
+Import the repository and keep the defaults — `vercel.json` already tells Vercel there is no build step and that the site is served from the repo root. (`npm run bundle` is a manual helper, deliberately not named `build`, so Vercel does not try to run it.)
 
 ## Notes for contributors
 
